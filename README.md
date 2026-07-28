@@ -65,7 +65,7 @@ This will automatically provide all required dependencies without affecting your
 
 ### macOS
 
-Warning: macOS testing is limited, please report any issues you encounter.
+Warning: macOS testing is limited, please report any issues you encounter. The default macOS bash comes with an outdated release that's incompatible with this script; use `/opt/homebrew/bin/bash` instead (see usage instructions after performing below steps).
 
 1. Install dependencies using [Homebrew](https://brew.sh/):
 
@@ -87,9 +87,16 @@ brew install p7zip pv bash dialog coreutils
 3. Open the unzipped folder in the File Explorer. Right click on a file called `backup-windows.ps1`, and click on "Run with PowerShell". **IMPORTANT: If you see an error after running the script, search for "Developer Settings" in the Settings app, and apply the settings related to PowerShell. You may also have to open the file's Properties and ensure "Unblock" is checked next to "Security".**
 
 ![Powershell Developer Settings](.github/images/windows-powershell-developer-settings.png)
+
 ## Usage
 
-Just run `backup.sh` (or `backup-windows.ps1` on Windows) and the script will walk you through the process. This section covers advanced usage of this program.
+Just run:
+
+- `backup.sh` on Linux
+- `backup-windows.ps1` on Windows, by right-clicking
+- `/opt/homebrew/bin/bash ./backup.sh` on macOS
+
+and the script will walk you through the process. This section covers advanced usage of this program.
 
 ### Hooks
 
