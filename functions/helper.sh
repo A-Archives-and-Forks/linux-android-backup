@@ -79,11 +79,46 @@ function enough_free_space() {
 
 # "cecho" makes output messages yellow, if possible
 function cecho() {
-  if tty -s; then
-    echo "$(tput setaf 11)$1$(tput sgr0)"
-  else
-    echo "$1"
+  local msg="$1" bg_response
+
+  # Check the terminal background color only once per script run
+  if [[ ! -v _TERM_BG_LIGHT ]]; then
+    # Assume a dark background
+    _TERM_BG_LIGHT=0
+
+    # Query terminal using OSC 11
+    if stty -g &>/dev/null; then
+      local old_stty=$(stty -g)
+      stty -echo -icanon min 0 time 5 2>/dev/null
+      printf '\e]11;?\a' > /dev/tty
+      bg_response=$(dd bs=30 count=1 2>/dev/null < /dev/tty)
+      stty "$old_stty"
+    fi
+
+    # Parse the reply.
+    # Expected format: rgb:RRRR/GGGG/BBBB
+    if [[ $bg_response =~ rgb:([0-9a-fA-F]{1,4})/([0-9a-fA-F]{1,4})/([0-9a-fA-F]{1,4}) ]]; then
+      # Convert from 16-bit to 8-bit
+      local r=$(( 16#${BASH_REMATCH[1]} >> 8 ))
+      local g=$(( 16#${BASH_REMATCH[2]} >> 8 ))
+      local b=$(( 16#${BASH_REMATCH[3]} >> 8 ))
+      # sRGB luminance, scaled
+      local lum=$(( (2126 * r + 7152 * g + 722 * b) / 10000 ))
+      (( lum > 128 )) && _TERM_BG_LIGHT=1
+    fi
   fi
+
+  if (( _TERM_BG_LIGHT )); then
+    # Bold black
+    tput setaf 0
+    tput bold
+  else
+    # Bright yellow
+    tput setaf 11
+  fi
+  printf '%s' "$msg"
+  tput sgr0
+  printf '\n'
 }
 
 function check_adb_connection() {
@@ -212,7 +247,7 @@ function get_text_input() {
 
 function remove_backup_tmp() {
   local cleaned=false
-  
+
   # 1. Check BACKUP_TMP_DIR variable (backup/restore scripts set this)
   if [ -n "$BACKUP_TMP_DIR" ] && [ -e "$BACKUP_TMP_DIR" ]; then
     cecho "Cleaning up target dir: $BACKUP_TMP_DIR"
@@ -225,7 +260,7 @@ function remove_backup_tmp() {
     fi
     cleaned=true
   fi
-  
+
   if [ "$cleaned" = false ]; then
     cecho "No temporary files found."
   else
