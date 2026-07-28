@@ -248,7 +248,7 @@ function get_text_input() {
 function remove_backup_tmp() {
   local cleaned=false
 
-  # 1. Check BACKUP_TMP_DIR variable (backup/restore scripts set this)
+  # Check BACKUP_TMP_DIR variable (backup/restore scripts set this)
   if [ -n "$BACKUP_TMP_DIR" ] && [ -e "$BACKUP_TMP_DIR" ]; then
     cecho "Cleaning up target dir: $BACKUP_TMP_DIR"
     if [ "$data_erase_choice" = "Slow" ]; then
