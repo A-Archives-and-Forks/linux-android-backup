@@ -86,7 +86,7 @@ function cecho() {
     # Assume a dark background
     _TERM_BG_LIGHT=0
 
-    # Query terminal using OSC 11
+    # Query terminal using the OSC 11 escape sequence
     if stty -g &>/dev/null; then
       local old_stty=$(stty -g)
       stty -echo -icanon min 0 time 5 2>/dev/null
@@ -108,16 +108,23 @@ function cecho() {
     fi
   fi
 
-  if (( _TERM_BG_LIGHT )); then
-    # Bold black
-    tput setaf 0
-    tput bold
+  # Fall back to standard printf (without setting any colors) if we couldn't get the terminal background color.
+  # Checking $lum instead of $bg_response because the former is set only if $bg_response passes the validation regex.
+  # Better safe than sorry.
+  if [ -n "$lum" ]; then
+    if (( _TERM_BG_LIGHT )); then
+      # Bold black
+      tput setaf 0
+      tput bold
+    else
+      # Bright yellow
+      tput setaf 11
+    fi
+    printf '%s' "$msg"
+    tput sgr0
   else
-    # Bright yellow
-    tput setaf 11
+    printf '%s' "$msg"
   fi
-  printf '%s' "$msg"
-  tput sgr0
   printf '\n'
 }
 
